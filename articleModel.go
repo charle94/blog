@@ -29,6 +29,12 @@ func ArticleDelete(a Article) bool {
 		return false
 	}
 }
+func ArticleFind(a Article, pagenum int, pagesize int) (as []Article) {
+	//a = Article{Category: int64(1)}
+	offset := (pagenum - 1) * pagesize
+	engine.Limit(pagesize, offset).Find(&as, &a)
+	return as
+}
 func ArticleFindById(id int64) (a Article, has bool) {
 	has, _ = engine.Where("id=?", id).Get(&a)
 

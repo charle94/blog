@@ -21,3 +21,10 @@ func Test_article(t *testing.T) {
 	fmt.Println(a)
 	engine.Insert(&a)
 }
+func Test_articleget(t *testing.T) {
+	BeginModel()
+	as := ArticleFind(Article{Author: 0}, 3, 4)
+	if true {
+		fmt.Println(as)
+	}
+}

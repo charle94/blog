@@ -11,42 +11,43 @@ type Api interface {
 	Resopnse(w http.ResponseWriter, r *http.Request)
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	var a Article
+func ApiArticle(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	var (
+		method string
+		a      Article
+	)
 	w.Header().Set("Access-Control-Allow-Origin", "*")             //允许访问所有域
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type") //header的类型
-	data := make(map[string]interface{})
-	data["hasmore"] = true
-	pagenum, _ := strconv.Atoi(r.FormValue("pagenum"))
+	page, _ := strconv.Atoi(r.FormValue("page"))
 	pagesize, _ := strconv.Atoi(r.FormValue("pagesize"))
 	if pagesize <= 0 {
-		pagesize = 6
+		pagesize = PAGEGSIZE
 	}
-	as := ArticleFindByPage(pagenum, pagesize)
-	if len(as) < pagesize || len(as) == 0 {
-		data["hasmore"] = false
-	}
-	total := ArticleTotalCount(a)
-	data["total"] = total
-	data["size"] = len(as)
-	data["articles"] = as
-	json, err := json.Marshal(data)
-	if err != nil {
-		fmt.Fprintf(w, "json err")
+	article := r.FormValue("article")
+	json.Unmarshal([]byte(article), &a)
+	switch r.Method {
+	case "POST":
+		//更新文章
+
+	case "GET":
+		//根据条件查询文章
+		as := ArticleFind(a, page, pagesize)
+		total := ArticleTotalCount(a)
+		data["total"] = total
+		data["size"] = len(as)
+		data["articles"] = as
+	case "PUT":
+		//新增文章
+	case "DELETE":
+
+	default:
+		//get
 
 	}
-	fmt.Fprintf(w, string(json))
-
-}
-func ApiArticleByCat(w http.ResponseWriter, r *http.Request) {
-	var data map[string]interface{}
-	w.Header().Set("Access-Control-Allow-Origin", "*")             //允许访问所有域
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type") //header的类型
-	category := strconv.Atoi(r.FormValue("id"))
-	page := strconv.Atoi(r.FormValue("page"))
-	fmt.Println(page, category)
-	fmt.Fprintf(w, "ok")
-
+	out, _ := json.Marshal(data)
+	fmt.Fprintf(w, method)
+	fmt.Fprintf(w, string(out))
 }
 func ApiCategory(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
@@ -65,7 +66,11 @@ func ApiCategory(w http.ResponseWriter, r *http.Request) {
 			data["category"] = cat
 		}
 	case "POST":
-
+		//改分类
+	case "PUT":
+		//新增
+	case "DELETE":
+		//删除
 	default:
 
 	}
@@ -77,8 +82,7 @@ func ApiCategory(w http.ResponseWriter, r *http.Request) {
 }
 func ApiClient() {
 	BeginModel()
-	http.HandleFunc("/home", home)
-	http.HandleFunc("/article", ApiArticleByCat)
+	http.HandleFunc("/article", ApiArticle)
 	http.HandleFunc("/category", ApiCategory)
 	http.ListenAndServe(":8090", nil)
 }
